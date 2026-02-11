@@ -1,6 +1,6 @@
 ﻿{
   "name": "Deathcount",
-  "description": "Simple mod to display your characters death count in the UI.",
+  "description": "Simple mod to display your characters death count in the UI and display your characters death statistics.",
   "version_number": "0.0.1",
   "website_url": "",
   "dependencies": [
