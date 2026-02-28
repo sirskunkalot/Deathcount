@@ -1,8 +1,8 @@
 ﻿{
   "name": "Deathcount",
-  "description": "Simple mod to display your characters death count in the UI and display your characters death statistics.",
+  "description": "Simple mod to display your characters death count in the UI and list your characters death statistics.",
   "version_number": "0.0.1",
-  "website_url": "",
+  "website_url": "https://github.com/sirskunkalot/Deathcount",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2333",
     "ValheimModding-Jotunn-2.26.1"

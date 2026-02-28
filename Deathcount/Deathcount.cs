@@ -4,7 +4,9 @@ using Jotunn.Configs;
 using Jotunn.Managers;
 using System;
 using System.Linq;
+using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Deathcount
 {
@@ -17,50 +19,67 @@ namespace Deathcount
         public const string PluginVersion = "0.0.1";
 
         private static ConfigEntry<bool> EnabledConfig;
-        private static ConfigEntry<KeyCode> ToggleUIConfig;
-        private static ButtonConfig ToggleUIButton;
+        private static ConfigEntry<float> PosXConfig;
+        private static ConfigEntry<float> PosYConfig;
+        private static ConfigEntry<int> FontSizeConfig;
+        private static ConfigEntry<KeyCode> ToggleStatisticsUIConfig;
+        private static ButtonConfig ToggleStatisticsUIButton;
 
+        private static GameObject DeathcountUI;
         private static GameObject StatisticsUI;
         
         private void Awake()
         {
             EnabledConfig = Config.Bind(
-                "Settings", "Enabled", true, "Deathcount is enabled and will show total deaths on screen upon entering a world");
+                "Deathcount", "Enabled", true, "Deathcount is enabled and will show total deaths on screen upon entering a world");
             EnabledConfig.SettingChanged += (_, _) =>
             {
                 if (EnabledConfig.Value)
                 {
-
+                    if (!DeathcountUI) CreateDeathcountUI();
                 }
                 else
                 {
-                    DestroyStatisticsUI();
+                    if (DeathcountUI) DestroyDeathcountUI();
+                    if (StatisticsUI) DestroyStatisticsUI();
+                }
+            };
+            PosXConfig = Config.Bind(
+                "Deathcount", "X Position", 0f, "X Position of the Deathcount display. Screen position will be saved automatically on logout when the display was dragged.");
+            PosYConfig = Config.Bind(
+                "Deathcount", "Y Position", -45f, "Y Position of the Deathcount display. Screen position will be saved automatically on logout when the display was dragged.");
+            FontSizeConfig = Config.Bind(
+                "Deathcount", "Font size", 30, "Size of the Deathcount display font.");
+            FontSizeConfig.SettingChanged += (_, _) =>
+            {
+                if (DeathcountUI)
+                {
+                    DeathcountUI.GetComponent<Text>().fontSize = FontSizeConfig.Value;
                 }
             };
 
-            ToggleUIConfig = Config.Bind(
-                "Settings", "Death Statistics UI", KeyCode.F10, "Key to show/hide the death statistics UI");
-            ToggleUIButton = new ButtonConfig
+            ToggleStatisticsUIConfig = Config.Bind(
+                "Statistics", "Statistics UI Key", KeyCode.F10, "Key to show/hide the death statistics UI");
+            ToggleStatisticsUIButton = new ButtonConfig
             {
-                Name = "DeathcountToggle",
-                Config = ToggleUIConfig,
+                Name = "StatisticsUIKey",
+                Config = ToggleStatisticsUIConfig,
                 ActiveInCustomGUI = true
             };
-            InputManager.Instance.AddButton(PluginGUID, ToggleUIButton);
+            InputManager.Instance.AddButton(PluginGUID, ToggleStatisticsUIButton);
 
+            GUIManager.OnCustomGUIAvailable += () =>
+            {
+                if (!EnabledConfig.Value) return;
+                CreateDeathcountUI();
+            };
+
+            Harmony.CreateAndPatchAll(typeof(Deathcount), PluginGUID);
         }
 
         private void Update()
         {
-            if (!EnabledConfig.Value) {
-                return;
-            }
-            if (ZInput.instance == null)
-            {
-                return;
-            }
-
-            if (ZInput.GetButtonDown(ToggleUIButton.Name))
+            if (ZInput.instance != null && ZInput.GetButtonDown(ToggleStatisticsUIButton.Name))
             {
                 if (!StatisticsUI)
                 {
@@ -71,6 +90,101 @@ namespace Deathcount
                     DestroyStatisticsUI();
                 }
             }
+        }
+
+        [HarmonyPatch(typeof(Player), nameof(Player.OnDeath)), HarmonyPostfix]
+        private static void PostfixPlayerOnDeath(Player __instance)
+        {
+            if (__instance == Player.m_localPlayer && DeathcountUI)
+            {
+                UpdateDeathcountUI();
+            }
+        }
+        
+        [HarmonyPatch(typeof(Game), nameof(Game.Shutdown)), HarmonyPostfix]
+        private static void PostfixGameShutdown(Game __instance)
+        {
+            if (DeathcountUI)
+            {
+                PosXConfig.Value = ((RectTransform)DeathcountUI.transform).anchoredPosition.x;
+                PosYConfig.Value = ((RectTransform)DeathcountUI.transform).anchoredPosition.y;
+            }
+        }
+
+        private static void CreateDeathcountUI()
+        {
+            if (GUIManager.Instance == null)
+            {
+                Jotunn.Logger.LogError("GUIManager instance is null");
+                return;
+            }
+            if (!GUIManager.CustomGUIFront)
+            {
+                Jotunn.Logger.LogError("GUIManager CustomGUI is null");
+                return;
+            }
+            if (DeathcountUI)
+            {
+                Jotunn.Logger.LogError("DeathcountUI is not null");
+                return;
+            }
+            
+            if (Game.instance)
+            {
+                DeathcountUI = GUIManager.Instance.CreateText(
+                    text: $"Deaths: {Game.instance.GetPlayerProfile().m_playerStats[PlayerStatType.Deaths]}",
+                    parent: GUIManager.CustomGUIBack.transform,
+                    anchorMin: new Vector2(0.5f, 1f),
+                    anchorMax: new Vector2(0.5f, 1f),
+                    position: new Vector2(PosXConfig.Value, PosYConfig.Value),
+                    font: GUIManager.Instance.NorseBold,
+                    fontSize: FontSizeConfig.Value,
+                    color: GUIManager.Instance.ValheimOrange,
+                    outline: true,
+                    outlineColor: Color.black,
+                    width: 100f,
+                    height: 50f,
+                    addContentSizeFitter: false);
+                var fitter = DeathcountUI.AddComponent<ContentSizeFitter>();
+                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                var text = DeathcountUI.GetComponent<Text>();
+                text.horizontalOverflow = HorizontalWrapMode.Overflow;
+                text.verticalOverflow = VerticalWrapMode.Truncate;
+                DeathcountUI.AddComponent<Jotunn.GUI.DragWindowCntrl>();
+
+                DeathcountUI.SetActive(true);
+            }
+        }
+
+        private static void UpdateDeathcountUI()
+        {
+            if (!DeathcountUI)
+            {
+                Jotunn.Logger.LogError("DeathcountUI is null");
+                return;
+            }
+            
+            if (Game.instance)
+            {
+                DeathcountUI.GetComponent<Text>().text =
+                    $"Deaths: {Game.instance.GetPlayerProfile().m_playerStats[PlayerStatType.Deaths]}";
+            }
+        }
+
+        private static void DestroyDeathcountUI()
+        {
+            if (!DeathcountUI)
+            {
+                Jotunn.Logger.LogError("DeathcountUI is null");
+                return;
+            }
+            
+            PosXConfig.Value = ((RectTransform)DeathcountUI.transform).anchoredPosition.x;
+            PosYConfig.Value = ((RectTransform)DeathcountUI.transform).anchoredPosition.y;
+            
+            DeathcountUI.SetActive(false);
+            Destroy(DeathcountUI);
         }
 
         private static void CreateStatisticsUI()
