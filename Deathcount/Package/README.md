@@ -1,14 +1,11 @@
-﻿# JotunnModStub
-Upon building for release, this README.md is copied into the `Package` folder for thunderstore packaging. Remember to also edit the manifest.json and supply your own mod icon.
+﻿# Deathcount
+Simple mod to display your characters death count in the UI and display your characters death statistics.
 
 ## Installation (manual)
-
+Drop the dll into your BepInEx\plugin folder and start boasting with your deaths.
 
 ## Features
-
+Displays your characters death count on screen. You can drag the text on your screen, the position will be saved after logout. You can display your current characters death statistics  (default Key is F10).
 
 ## Changelog
-
-
-## Known issues
-You can find the github at:
+* 0.0.1: Initial Release

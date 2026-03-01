@@ -1,5 +1,5 @@
 ﻿# Deathcount
-Simple mod to display your characters death count in the UI and display your characters death statistics.
+Simple Valheim mod to display your characters death count in the UI and display your characters death statistics.
 
 ## Installation (manual)
 Drop the dll into your BepInEx\plugin folder and start boasting with your deaths.
