@@ -22,6 +22,8 @@ namespace Deathcount
         private static ConfigEntry<float> PosXConfig;
         private static ConfigEntry<float> PosYConfig;
         private static ConfigEntry<int> FontSizeConfig;
+        private static ConfigEntry<Color> FontColorConfig;
+        private static ConfigEntry<Color> FontOutlineColorConfig;
         private static ConfigEntry<KeyCode> ToggleStatisticsUIConfig;
         private static ButtonConfig ToggleStatisticsUIButton;
 
@@ -57,7 +59,26 @@ namespace Deathcount
                     DeathcountUI.GetComponent<Text>().fontSize = FontSizeConfig.Value;
                 }
             };
-
+            FontColorConfig = Config.Bind(
+                "Deathcount", "Font color", GUIManager.Instance.ValheimOrange, "Font color of the Deathcount display.");
+            FontColorConfig.SettingChanged += (_, _) =>
+            {
+                if (DeathcountUI)
+                {
+                    DeathcountUI.GetComponent<Text>().color = FontColorConfig.Value;
+                }
+            };
+            
+            FontOutlineColorConfig = Config.Bind(
+                "Deathcount", "Font outline color", Color.black, "Font outline color of the Deathcount display.");
+            FontOutlineColorConfig.SettingChanged += (_, _) =>
+            {
+                if (DeathcountUI)
+                {
+                    DeathcountUI.GetComponent<Outline>().effectColor = FontOutlineColorConfig.Value;
+                }
+            };
+            
             ToggleStatisticsUIConfig = Config.Bind(
                 "Statistics", "Statistics UI Key", KeyCode.F10, "Key to show/hide the death statistics UI");
             ToggleStatisticsUIButton = new ButtonConfig
@@ -108,6 +129,11 @@ namespace Deathcount
             {
                 PosXConfig.Value = ((RectTransform)DeathcountUI.transform).anchoredPosition.x;
                 PosYConfig.Value = ((RectTransform)DeathcountUI.transform).anchoredPosition.y;
+                DestroyDeathcountUI();
+            }   
+            if (StatisticsUI)
+            {
+                DestroyStatisticsUI();
             }
         }
 
@@ -139,18 +165,18 @@ namespace Deathcount
                     position: new Vector2(PosXConfig.Value, PosYConfig.Value),
                     font: GUIManager.Instance.NorseBold,
                     fontSize: FontSizeConfig.Value,
-                    color: GUIManager.Instance.ValheimOrange,
+                    color: FontColorConfig.Value,
                     outline: true,
-                    outlineColor: Color.black,
+                    outlineColor: FontOutlineColorConfig.Value,
                     width: 100f,
                     height: 50f,
                     addContentSizeFitter: false);
                 var fitter = DeathcountUI.AddComponent<ContentSizeFitter>();
                 fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                 var text = DeathcountUI.GetComponent<Text>();
                 text.horizontalOverflow = HorizontalWrapMode.Overflow;
-                text.verticalOverflow = VerticalWrapMode.Truncate;
+                text.verticalOverflow = VerticalWrapMode.Overflow;
                 DeathcountUI.AddComponent<Jotunn.GUI.DragWindowCntrl>();
 
                 DeathcountUI.SetActive(true);
@@ -185,6 +211,7 @@ namespace Deathcount
             
             DeathcountUI.SetActive(false);
             Destroy(DeathcountUI);
+            DeathcountUI = null;
         }
 
         private static void CreateStatisticsUI()
@@ -279,6 +306,7 @@ namespace Deathcount
             GUIManager.BlockInput(false);
             StatisticsUI.SetActive(false);
             Destroy(StatisticsUI);
+            StatisticsUI = null;
         }
     }
 }
