@@ -193,41 +193,66 @@ namespace Deathcount
             if (profile == null)
                 return;
 
-            StatisticsUI = GUIManager.Instance.CreateWoodpanel(
-                GUIManager.CustomGUIFront.transform,
-                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(0, 0), 450f, 500f, false);
-            StatisticsUI.SetActive(false);
+            StatisticsUI = new GameObject("StatisticsUI", typeof(RectTransform));
+            StatisticsUI.transform.SetParent(GUIManager.CustomGUIFront.transform, false);
 
-            GUIManager.Instance.CreateText(
-                "Death Statistics", StatisticsUI.transform,
-                new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(45f, -45f),
-                GUIManager.Instance.AveriaSerifBold, 30, GUIManager.Instance.ValheimOrange,
-                true, Color.black, 300f, 40f, false);
+            var rt = (RectTransform)StatisticsUI.transform;
+            rt.anchorMin = new Vector2(0f, 0.5f);
+            rt.anchorMax = new Vector2(0f, 0.5f);
+            rt.pivot = new Vector2(0f, 0.5f);
+            rt.anchoredPosition = new Vector2(30f, 0f);
 
-            var scrollView = GUIManager.Instance.CreateScrollView(
-                StatisticsUI.transform, false, true, 10f, 5f,
-                GUIManager.Instance.ValheimScrollbarHandleColorBlock, Color.black, 300f, 350f);
-            var content = scrollView.transform.Find("Scroll View/Viewport/Content");
+            var bg = StatisticsUI.AddComponent<Image>();
+            bg.type = Image.Type.Sliced;
+            bg.material = PrefabManager.Cache.GetPrefab<Material>("litpanel");
+            bg.color = Color.white;
+            bg.sprite = GUIManager.Instance.GetSprite("woodpanel_trophys");
+
+            var layout = StatisticsUI.AddComponent<VerticalLayoutGroup>();
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childAlignment = TextAnchor.UpperLeft;
+            layout.spacing = 4f;
+            layout.padding = new RectOffset(25, 25, 25, 25);
+
+            var fitter = StatisticsUI.AddComponent<ContentSizeFitter>();
+            fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            AddStatText("Death Statistics", 30, GUIManager.Instance.NorseBold, TextAnchor.MiddleCenter, GUIManager.Instance.ValheimOrange);
+            AddSpacer(10f);
+
+            AddStatText($"Deaths: {profile.m_playerStats[PlayerStatType.Deaths]}", 18,
+                GUIManager.Instance.AveriaSerif, TextAnchor.MiddleLeft, Color.white);
 
             var stats = Enum.GetValues(typeof(PlayerStatType))
                 .Cast<PlayerStatType>()
-                .Where(e => e == PlayerStatType.Deaths
-                            || e.ToString().StartsWith("DeathB")
-                            || e.ToString().StartsWith("Tombstone"))
+                .Where(e => e.ToString().StartsWith("DeathB") || e.ToString().StartsWith("Tombstone"))
                 .OrderBy(e => e.ToString());
 
             foreach (var stat in stats)
-            {
-                GUIManager.Instance.CreateText(
-                    $"{stat}: {profile.m_playerStats[stat]}", content,
-                    new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f),
-                    GUIManager.Instance.AveriaSerif, 20, GUIManager.Instance.ValheimOrange,
-                    true, Color.black, 300f, 40f, false);
-            }
+                AddStatText($"{stat}: {profile.m_playerStats[stat]}", 18,
+                    GUIManager.Instance.AveriaSerif, TextAnchor.MiddleLeft, Color.white);
 
             StatisticsUI.SetActive(true);
-            GUIManager.BlockInput(true);
+            return;
+
+            void AddStatText(string text, int fontSize, Font font, TextAnchor alignment, Color color)
+            {
+                var go = GUIManager.Instance.CreateText(
+                    text, StatisticsUI.transform,
+                    new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0f, 0f),
+                    font, fontSize, color,
+                    true, Color.black, 300f, 30f, false);
+                go.GetComponent<Text>().alignment = alignment;
+            }
+
+            void AddSpacer(float height)
+            {
+                var spacer = new GameObject("Spacer", typeof(RectTransform), typeof(LayoutElement));
+                spacer.transform.SetParent(StatisticsUI.transform, false);
+                spacer.GetComponent<LayoutElement>().preferredHeight = height;
+            }
         }
 
         private static void DestroyStatisticsUI()
@@ -235,7 +260,6 @@ namespace Deathcount
             if (!StatisticsUI)
                 return;
 
-            GUIManager.BlockInput(false);
             StatisticsUI.SetActive(false);
             Destroy(StatisticsUI);
             StatisticsUI = null;
