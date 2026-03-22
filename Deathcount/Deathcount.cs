@@ -141,10 +141,13 @@ namespace Deathcount
             var profile = Game.instance.GetPlayerProfile();
             if (profile == null)
                 return;
-
+            
+            // Try to attach it to a child parent of the root 
+            var hud = GUIManager.CustomGUIBack.transform.parent.Find("PixelFix/IngameGui/HUD/hudroot");
+            
             DeathcountUI = GUIManager.Instance.CreateText(
                 $"Deaths: {profile.m_playerStats[PlayerStatType.Deaths]}",
-                GUIManager.CustomGUIBack.transform,
+                hud ? hud : GUIManager.CustomGUIBack.transform,
                 new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                 new Vector2(PosXConfig.Value, PosYConfig.Value),
                 GUIManager.Instance.NorseBold, FontSizeConfig.Value, FontColorConfig.Value,
@@ -157,6 +160,9 @@ namespace Deathcount
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             DeathcountUI.AddComponent<Jotunn.GUI.DragWindowCntrl>();
+            
+            
+            
             DeathcountUI.SetActive(true);
         }
         
