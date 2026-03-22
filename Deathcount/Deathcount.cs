@@ -17,7 +17,7 @@ namespace Deathcount
     {
         public const string PluginGUID = "de.sirskunkalot.Deathcount";
         public const string PluginName = "Deathcount";
-        public const string PluginVersion = "0.0.3";
+        public const string PluginVersion = "0.0.4";
 
         private static ConfigEntry<bool> EnabledConfig;
         private static ConfigEntry<float> PosXConfig;

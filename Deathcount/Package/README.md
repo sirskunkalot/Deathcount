@@ -8,6 +8,8 @@ Drop the dll into your BepInEx\plugin folder and start boasting with your deaths
 Displays your characters death count on screen. You can drag the text on your screen in the pause menu, the position will be saved after logout. You can display your current characters death statistics  (default Key is F10).
 
 ## Changelog
+### 0.0.4
+* feat: Try to locate Deathcount UI under Valheim's native UI to have it fade out and in with it.
 ### 0.0.3
 * feat: Redesigned Statistics UI and moved it to the left side
 * feat: Statistics UI doesn't block input anymore
