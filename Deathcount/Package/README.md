@@ -1,13 +1,17 @@
 # Deathcount
-Simple Valheim mod to display your characters death count in the UI and display your characters death statistics.
+Simple Valheim mod to display your characters death count in the UI and display detailed character death statistics.
 
 ## Installation (manual)
 Drop the dll into your BepInEx\plugin folder and start boasting with your deaths.
 
 ## Features
-Displays your characters death count on screen. You can drag the text on your screen in the pause menu, the position will be saved after logout. You can display your current characters death statistics  (default Key is F10).
+Displays your characters death count on screen. You can drag the text on your screen in the pause menu, the position will be saved after logout. You can display a detailed list of your current characters death statistics and how much you fingered other players tombstones (default Key is F10).
+
+Since v1.0 of Valheim the statistics are now saved globally and by achievement difficulty. This mod outputs the global statistics.
 
 ## Changelog
+### 0.0.5
+* chore: Compatible with Valheim 1.0.
 ### 0.0.4
 * feat: Try to locate Deathcount UI under Valheim's native UI to have it fade out and in with it.
 ### 0.0.3
