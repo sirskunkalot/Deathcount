@@ -146,7 +146,7 @@ namespace Deathcount
             var hud = GUIManager.CustomGUIBack.transform.parent.Find("PixelFix/IngameGui/HUD/hudroot");
             
             DeathcountUI = GUIManager.Instance.CreateText(
-                $"Deaths: {profile.m_playerStats[PlayerStatType.Deaths]}",
+                $"Deaths: {profile.m_playerStats[0].m_stats[PlayerStatType.Deaths]}",
                 hud ? hud : GUIManager.CustomGUIBack.transform,
                 new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                 new Vector2(PosXConfig.Value, PosYConfig.Value),
@@ -175,7 +175,7 @@ namespace Deathcount
                 return;
 
             DeathcountUI.GetComponent<Text>().text =
-                $"Deaths: {profile.m_playerStats[PlayerStatType.Deaths]}";
+                $"Deaths: {profile.m_playerStats[0].m_stats[PlayerStatType.Deaths]}";
         }
 
         private static void DestroyDeathcountUI()
@@ -228,7 +228,7 @@ namespace Deathcount
             AddStatText("Death Statistics", 30, GUIManager.Instance.NorseBold, TextAnchor.MiddleCenter, GUIManager.Instance.ValheimOrange);
             AddSpacer(10f);
 
-            AddStatText($"Deaths: {profile.m_playerStats[PlayerStatType.Deaths]}", 18,
+            AddStatText($"Deaths: {profile.m_playerStats[0].m_stats[PlayerStatType.Deaths]}", 18,
                 GUIManager.Instance.AveriaSerif, TextAnchor.MiddleLeft, Color.white);
 
             var stats = Enum.GetValues(typeof(PlayerStatType))
@@ -237,7 +237,7 @@ namespace Deathcount
                 .OrderBy(e => e.ToString());
 
             foreach (var stat in stats)
-                AddStatText($"{stat}: {profile.m_playerStats[stat]}", 18,
+                AddStatText($"{stat}: {profile.m_playerStats[0].m_stats[stat]}", 18,
                     GUIManager.Instance.AveriaSerif, TextAnchor.MiddleLeft, Color.white);
 
             StatisticsUI.SetActive(true);
